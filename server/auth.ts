@@ -33,9 +33,11 @@ async function comparePasswords(supplied: string, stored: string) {
 const PostgresSessionStore = connectPg(session);
 
 // Configurations pour la connexion DB
-const connectionString = process.env.DATABASE_URL || '';
-const defaultUrl = 'postgres://postgres:Ahmedahmed@localhost:5432/hotel_management';
-const dbUrl = connectionString || defaultUrl;
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL must be configured before starting the server");
+}
+const dbUrl = connectionString;
 
 // Extraction des paramètres de connexion
 let user, password, host, port, database;
@@ -84,9 +86,17 @@ function log(message: string, context: string) {
     console.log(`[${timestamp}] [${context}] ${message}`);
 }
 
+function requireSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error("SESSION_SECRET must contain at least 32 characters");
+  }
+  return secret;
+}
+
 export function setupAuth(app: Express) {
         const sessionSettings: session.SessionOptions = {
-            secret: process.env.SESSION_SECRET || 'hotel-management-secret-key',
+            secret: requireSessionSecret(),
             resave: false,
             saveUninitialized: false,
             store: new PostgresSessionStore({
