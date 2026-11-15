@@ -3,13 +3,12 @@ const { Client } = pkg;
 
 import { drizzle } from "drizzle-orm/node-postgres";
 
-const client = new Client({
-  host: "localhost",
-  user: "postgres",
-  password: "Ahmedahmed2004$",
-  database: "postgres", 
-  port: 5432,
-});
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL must be configured before starting the server");
+}
+
+const client = new Client({ connectionString });
 
 client
   .connect()
