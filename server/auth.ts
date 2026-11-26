@@ -1,3 +1,4 @@
+import "dotenv/config";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
@@ -33,9 +34,15 @@ async function comparePasswords(supplied: string, stored: string) {
 const PostgresSessionStore = connectPg(session);
 
 // Configurations pour la connexion DB
-const connectionString = process.env.DATABASE_URL || '';
-const defaultUrl = 'postgres://postgres:Ahmedahmed@localhost:5432/hotel_management';
-const dbUrl = connectionString || defaultUrl;
+const dbUrl = process.env.DATABASE_URL;
+if (!dbUrl) {
+  throw new Error("DATABASE_URL is required. Set it before starting the application.");
+}
+
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret) {
+  throw new Error("SESSION_SECRET is required. Set it before starting the application.");
+}
 
 // Extraction des paramètres de connexion
 let user, password, host, port, database;
@@ -86,7 +93,7 @@ function log(message: string, context: string) {
 
 export function setupAuth(app: Express) {
         const sessionSettings: session.SessionOptions = {
-            secret: process.env.SESSION_SECRET || 'hotel-management-secret-key',
+            secret: sessionSecret,
             resave: false,
             saveUninitialized: false,
             store: new PostgresSessionStore({
