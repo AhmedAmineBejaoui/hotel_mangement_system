@@ -1,22 +1,21 @@
+import "dotenv/config";
 import pkg from "pg";
 const { Client } = pkg;
 
 import { drizzle } from "drizzle-orm/node-postgres";
 
-const client = new Client({
-  host: "localhost",
-  user: "postgres",
-  password: "Ahmedahmed2004$",
-  database: "postgres", 
-  port: 5432,
-});
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL is required. Set it before starting the application.");
+}
+
+const client = new Client({ connectionString: databaseUrl });
 
 client
   .connect()
   .then(() => console.log("Connected to the database"))
   .catch((err) => console.error("Database connection error:", err));
 
-// Création de l'instance Drizzle ORM
 const db = drizzle(client);
 
 export { client, db };
